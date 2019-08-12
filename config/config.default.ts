@@ -23,6 +23,10 @@ export default (appInfo: EggAppInfo) => {
     },
     domainWhiteList: ['http://10.1.0.16:8092']
   };
+  config.bodyParser = {
+    jsonLimit: '5mb',
+    formLimit: '5mb',
+  };
   config.cors = {
     origin: '*',
     allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH'

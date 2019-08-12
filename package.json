@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "compressing": "^1.4.0",
+    "docx-templates": "^3.0.0",
     "docxtemplater": "^3.14.0",
     "egg": "^2.15.1",
     "egg-cors": "^2.2.0",

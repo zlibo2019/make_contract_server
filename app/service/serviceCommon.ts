@@ -10,8 +10,8 @@ export default class ExportService extends Service {
   /**
    * # 生成合同
    */
-  async makeContract() {
-    const { ctx } = this;
+  makeContract(base64_1, base64_2) {
+    // const { ctx } = this;
     let jResult: IResult
       = {
       code: 600,
@@ -19,30 +19,37 @@ export default class ExportService extends Service {
       data: null
     };
 
-    let body = ctx.request.body;
-    let base64 = body.photo;
 
     console.log('aaaaaaaaaaaa');
     try {
 
       //读取模板文件
-      var content = fs.readFileSync(path.join(__dirname, 'template.docx'), 'binary');
-      // var zip = new Zip();
-      // zip.file("a.docx");
+      let dir = path.resolve(__dirname, '../../docx');
+      base64_1 = base64_1.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
+      let dataBuffer = new Buffer(base64_1, 'base64'); //把base64码转成buffer对象，
 
+
+      fs.writeFileSync(path.join(dir, 'a.jpg'), dataBuffer);
+
+      base64_2 = base64_2.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
+      dataBuffer = new Buffer(base64_2, 'base64'); //把base64码转成buffer对象，
+      fs.writeFileSync(path.join(dir, 'b.jpg'), dataBuffer);
+
+
+
+      var content = fs.readFileSync(path.join(dir, 'template.docx'), 'binary');
       var zip = new Zip(content);
       var doc = new Docxtemplater();
       var opts = {
         centered: false,
         // @ts-ignore
-        getImage: base64,
-        // function (tagValue, tagName) {
-        //   console.log(__dirname);
-        //   return fs.readFileSync(path.join(__dirname, tagValue));
-        // },
+        getImage: function (tagValue, tagName) {
+          return fs.readFileSync(path.join(dir, tagValue));
+          // return base64;
+        },
         // @ts-ignore
         getSize: function (img, tagValue, tagName) {
-          return [150, 150];
+          return [200, 120];
         }
       }
       doc.attachModule(new ImageModule(opts))
@@ -57,8 +64,8 @@ export default class ExportService extends Service {
       });
       doc.render();
       var buf = doc.getZip().generate({ type: 'nodebuffer' });
-      fs.writeFileSync(path.join(__dirname, 'b.docx'), buf);
-
+      fs.writeFileSync(path.join(dir, 'b.docx'), buf);
+      jResult.data = buf;
     } catch (error) {
       jResult.code = 601;
       jResult.msg = error.stack;
