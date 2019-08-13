@@ -26,13 +26,14 @@ export default class ExportService extends Service {
       //读取模板文件
       let dir = path.resolve(__dirname, '../../docx');
       base64_1 = base64_1.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
-      let dataBuffer = new Buffer(base64_1, 'base64'); //把base64码转成buffer对象，
+      let dataBuffer = Buffer.from(base64_1); //把base64码转成buffer对象，
 
 
       fs.writeFileSync(path.join(dir, 'a.jpg'), dataBuffer);
 
       base64_2 = base64_2.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
-      dataBuffer = new Buffer(base64_2, 'base64'); //把base64码转成buffer对象，
+      // dataBuffer = new Buffer(base64_2, 'base64'); //把base64码转成buffer对象，
+      dataBuffer = Buffer.from(base64_2);
       fs.writeFileSync(path.join(dir, 'b.jpg'), dataBuffer);
 
 
@@ -64,9 +65,11 @@ export default class ExportService extends Service {
       });
       doc.render();
       var buf = doc.getZip().generate({ type: 'nodebuffer' });
-      fs.writeFileSync(path.join(dir, 'b.docx'), buf);
+      // fs.writeFileSync(path.join(dir, 'b.docx'), buf);
+      console.log('aaaaaaaaaaaaaaa11111111');
       jResult.data = buf;
     } catch (error) {
+      console.log('bbbbbbbbbbbbbbbb');
       jResult.code = 601;
       jResult.msg = error.stack;
       console.log(JSON.stringify(error.stack));

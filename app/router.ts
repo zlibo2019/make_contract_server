@@ -5,5 +5,5 @@
  */
 module.exports = app => {
   const { router, controller } = app;
-  router.post('/', controller.home.make_contract);                        // 查询教室课表
+  router.post('/a', controller.home.make_contract);                        // 查询教室课表
 };

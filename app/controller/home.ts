@@ -1,7 +1,7 @@
 'use strict';
 
 const Controller = require('egg').Controller;
-var fs = require('fs');
+// var fs = require('fs');
 
 export default class HomeController extends Controller {
   async make_contract() {
@@ -11,6 +11,6 @@ export default class HomeController extends Controller {
     let jResult = ctx.service.serviceCommon.makeContract(body.base64_1, body.base64_2);
     // let filePath = jResult.data;
     // let file = fs.readFileSync(filePath);
-    ctx.body = jResult.data;   // file buf
+    ctx.success(jResult);//jResult.data;   // file buf
   }
 }
