@@ -14,7 +14,9 @@
     "egg": "^2.15.1",
     "egg-cors": "^2.2.0",
     "egg-scripts": "^2.11.0",
+    "egg-sequelize": "^5.2.0",
     "jszip": "^2.6.1",
+    "mysql2": "^1.6.5",
     "open-docxtemplater-image-module": "^1.0.3"
   },
   "devDependencies": {
@@ -32,7 +34,7 @@
   "scripts": {
     "start": "egg-scripts start --daemon --title=egg-server-make_contract_server",
     "stop": "egg-scripts stop --title=egg-server-make_contract_server",
-    "dev": "egg-bin dev --port=7002",
+    "dev": "egg-bin dev --port=7001",
     "debug": "egg-bin debug",
     "test": "npm run lint -- --fix && npm run test-local",
     "test-local": "egg-bin test",
