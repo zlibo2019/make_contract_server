@@ -8,7 +8,7 @@ export default class HomeController extends Controller {
     const { ctx } = this;
     let body = ctx.request.body;
     // console.log('body' + JSON.stringify(ctx.request.body));
-    let jResult = ctx.service.serviceCommon.makeDocx(body.userId);
+    let jResult = ctx.service.serviceCommon.makeDocx(body);
     // let filePath = jResult.data;
     // let file = fs.readFileSync(filePath);
     ctx.success(jResult);//jResult.data;   // file buf

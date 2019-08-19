@@ -10,7 +10,7 @@ export default class ExportService extends Service {
   /**
    * # 生成合同
    */
-  makeDocx(userId) {
+  makeDocx(user) {
     // const { ctx } = this;
     let jResult: IResult
       = {
@@ -20,7 +20,10 @@ export default class ExportService extends Service {
     };
 
 
-    console.log('aaaaaaaaaaaa');
+    let userId = user.user_id;
+    // let userName = user.user_name;
+    // let userAddress = user.user_address;
+
     try {
       let dirFrom = path.resolve(__dirname, `../public/photo/${userId}`);
       // 创建目录 
@@ -33,16 +36,6 @@ export default class ExportService extends Service {
       if (!fs.existsSync(dirTo)) {
         fs.mkdirSync(dirTo, { recursive: true });
       };
-
-      // let dir = path.resolve(__dirname, `../public/docx`);
-
-      // base64_1 = base64_1.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
-      // let dataBuffer = new Buffer(base64_1, 'base64');
-      // fs.writeFileSync(path.join(dirTo, 'a.jpg'), dataBuffer);
-
-      // base64_2 = base64_2.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
-      // dataBuffer = new Buffer(base64_2, 'base64'); //把base64码转成buffer对象，
-      // fs.writeFileSync(path.join(dirTo, 'b.jpg'), dataBuffer);
 
       var content = fs.readFileSync(path.join(__dirname, '../public/docx/template.docx'), 'binary');
       var zip = new Zip(content);
@@ -61,18 +54,20 @@ export default class ExportService extends Service {
       }
       doc.attachModule(new ImageModule(opts))
       doc.loadZip(zip);
-      doc.setData({
-        name1: "内容已被替换1",
-        name2: "内容已被替换2",
-        value1: "新的值1",
-        value2: "新的值2",
-        image1: "sfz1.jpg",
-        image2: "sfz2.jpg"
-      });
+      user.image1 = "sfz1.jpg";
+      user.image2 = "sfz2.jpg"
+      // doc.setData({
+      //   userName: userName,
+      //   userId: userId,
+      //   userAddress: userAddress,
+      //   image1: "sfz1.jpg",
+      //   image2: "sfz2.jpg"
+      // });
+      doc.setData(user);
       doc.render();
       var buf = doc.getZip().generate({ type: 'nodebuffer' });
       fs.writeFileSync(path.join(dirTo, `contract.docx`), buf);
-      jResult.data =`http://127.0.0.1:7001/public/docx/${userId}/contract.docx`;
+      jResult.data = `http://127.0.0.1:7001/public/docx/${userId}/contract.docx`;
     } catch (error) {
       console.log('bbbbbbbbbbbbbbbb');
       jResult.code = 601;
@@ -98,17 +93,6 @@ export default class ExportService extends Service {
 
 
     try {
-      // let arrUser = new Array();
-      // for (let i = 0; i < docxData.length; i++) {
-      //   let curUser = docxData[i];
-      //   let user = {
-      //     user_id: curUser.身份证,
-      //     user_name: curUser.姓名,
-      //     user_address: curUser.地址,
-      //   }
-      //   ctx.model.DtUser.removeAttribute('id');
-      //   arrUser.push(user);
-      // }
       ctx.model.DtUser.removeAttribute('id');
       await ctx.model.DtUser.bulkCreate(docxData);
     } catch (error) {
@@ -168,17 +152,23 @@ export default class ExportService extends Service {
         fs.mkdirSync(dir, { recursive: true });
       };
 
-      base64_1 = base64_1.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
-      let dataBuffer = new Buffer(base64_1, 'base64');
-      fs.writeFileSync(path.join(dir, 'sfz1.jpg'), dataBuffer);
+      if (base64_1 !== null) {
+        base64_1 = base64_1.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
+        let dataBuffer = new Buffer(base64_1, 'base64');
+        fs.writeFileSync(path.join(dir, 'sfz1.jpg'), dataBuffer);
+      }
 
-      base64_2 = base64_2.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
-      dataBuffer = new Buffer(base64_2, 'base64');
-      fs.writeFileSync(path.join(dir, 'sfz2.jpg'), dataBuffer);
+      if (base64_2 !== null) {
+        base64_2 = base64_2.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
+        let dataBuffer = new Buffer(base64_2, 'base64');
+        fs.writeFileSync(path.join(dir, 'sfz2.jpg'), dataBuffer);
+      }
 
-      base64_3 = base64_3.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
-      dataBuffer = new Buffer(base64_3, 'base64');
-      fs.writeFileSync(path.join(dir, 'contract.jpg'), dataBuffer);
+      if (base64_3 !== null) {
+        base64_3 = base64_3.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
+        let dataBuffer = new Buffer(base64_3, 'base64');
+        fs.writeFileSync(path.join(dir, 'contract.jpg'), dataBuffer);
+      }
     } catch (error) {
       jResult.code = 601;
       jResult.msg = error.stack;
