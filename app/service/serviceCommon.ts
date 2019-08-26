@@ -20,7 +20,7 @@ export default class ExportService extends Service {
     };
 
 
-    let userId = user.user_id;
+    let userId = user.userId;
     // let userName = user.user_name;
     // let userAddress = user.user_address;
 
@@ -94,7 +94,9 @@ export default class ExportService extends Service {
 
     try {
       ctx.model.DtUser.removeAttribute('id');
-      await ctx.model.DtUser.bulkCreate(docxData);
+      await ctx.model.DtUser.upsert(docxData); 
+
+      // await ctx.model.DtUser.bulkCreate(docxData);
     } catch (error) {
       jResult.code = 601;
       jResult.msg = error.stack;

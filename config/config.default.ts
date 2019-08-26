@@ -33,11 +33,11 @@ export default (appInfo: EggAppInfo) => {
   };
   config.sequelize = {
     dialect: 'mysql', // support: mysql, mariadb, postgres, mssql
-    database: 'scm_main',
+    database: 'scm_main_gd',
     host: '127.0.0.1',
     port: 3306,
     username: 'root',
-    password: '',
+    password: '123456',
     logging: true,
   };
 
