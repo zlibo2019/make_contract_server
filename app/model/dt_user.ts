@@ -1,21 +1,22 @@
+
 /* jshint indent: 2 */
 
 module.exports = app => {
   const {
     STRING,
-    INTEGER
+    DATE
   } = app.Sequelize;
   const dt_user = app.model.define('dt_user', {
-    id: {
-      type: INTEGER,
-      allowNull: false,
-      autoIncrement: true,
-    },
+    // id: {
+    //   type: INTEGER,
+    //   allowNull: false,
+    //   autoIncrement: true,
+    // },
     userId: {
       field: 'userId',
       type: STRING,
       primaryKey: true,
-      allowNull: true
+      allowNull: false,
     },
     userNo: {
       field: 'userNo',
@@ -333,11 +334,21 @@ module.exports = app => {
       field: 'extend30',
       type: STRING,
       allowNull: true
-    }
+    },
+    createdAt: {
+      field: 'createdAt',
+      type: DATE,
+      allowNull: true
+    },
+    updatedAt: {
+      field: 'updatedAt',
+      type: DATE,
+      allowNull: true
+    },
   }, {
       tableName: 'dt_user',
       freezeTableName: true, // Model 对应的表名将与model名相同
-      timestamps: false,//去除createAt updateAt
+      timestamps: true,//去除createAt updateAt
     });
   return dt_user;
 };

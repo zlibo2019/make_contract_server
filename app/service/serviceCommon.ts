@@ -94,8 +94,10 @@ export default class ExportService extends Service {
 
     try {
       ctx.model.DtUser.removeAttribute('id');
-      await ctx.model.DtUser.upsert(docxData); 
-
+      for (let i = 0; i < docxData.length; i++) {
+        let curUser = docxData[i];
+        await ctx.model.DtUser.upsert(curUser);
+      }
       // await ctx.model.DtUser.bulkCreate(docxData);
     } catch (error) {
       jResult.code = 601;
