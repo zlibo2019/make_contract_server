@@ -37,7 +37,7 @@ export default class ExportService extends Service {
         fs.mkdirSync(dirTo, { recursive: true });
       };
 
-      var content = fs.readFileSync(path.join(__dirname, '../public/docx/template.docx'), 'binary');
+      var content = fs.readFileSync(path.join(__dirname, '../public/docx/template_contract.docx'), 'binary');
       var zip = new Zip(content);
       var doc = new Docxtemplater();
       var opts = {
@@ -93,12 +93,12 @@ export default class ExportService extends Service {
 
 
     try {
-      ctx.model.DtUser.removeAttribute('id');
+      ctx.model.DtContract.removeAttribute('id');
       for (let i = 0; i < docxData.length; i++) {
         let curUser = docxData[i];
-        await ctx.model.DtUser.upsert(curUser);
+        await ctx.model.DtContract.upsert(curUser);
       }
-      // await ctx.model.DtUser.bulkCreate(docxData);
+      // await ctx.model.DtContract.bulkCreate(docxData);
     } catch (error) {
       jResult.code = 601;
       jResult.msg = error.stack;
@@ -123,7 +123,7 @@ export default class ExportService extends Service {
 
     try {
 
-      let res = await ctx.model.DtUser.findAll();
+      let res = await ctx.model.DtContract.findAll();
       let arrUser = new Array();
       for (let i = 0; i < res.length; i++) {
         arrUser.push(res[i].dataValues);
@@ -181,4 +181,69 @@ export default class ExportService extends Service {
     }
     return jResult;
   }
+
+  /**
+* #  保存模板文件
+*/
+  async saveContractTemplate(base64_1) {
+    // const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
+    try {
+      let dir = path.resolve(__dirname, `../public/docx`);
+      // 创建目录 
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      };
+
+      // 文件复制
+      if (base64_1 !== null) {
+        let dataBuffer = new Buffer(base64_1, 'base64');
+        fs.writeFileSync(path.join(dir, 'template_contract.docx'), dataBuffer);
+      }
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      console.log(JSON.stringify(error.stack));
+      jResult.data = null;
+    }
+    return jResult;
+  }
+
+
+   /**
+* #  保存模板文件
+*/
+async saveUserTemplate(base64_1) {
+  // const { ctx } = this;
+  let jResult: IResult
+    = {
+    code: 600,
+    msg: '',
+    data: null
+  };
+  try {
+    let dir = path.resolve(__dirname, `../public/docx`);
+    // 创建目录 
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    };
+
+    // 文件复制
+    if (base64_1 !== null) {
+      let dataBuffer = new Buffer(base64_1, 'base64');
+      fs.writeFileSync(path.join(dir, 'template_user.xlsx'), dataBuffer);
+    }
+  } catch (error) {
+    jResult.code = 601;
+    jResult.msg = error.stack;
+    console.log(JSON.stringify(error.stack));
+    jResult.data = null;
+  }
+  return jResult;
+}
 }

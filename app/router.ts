@@ -9,4 +9,6 @@ module.exports = app => {
   router.post('/upXlsxData', controller.home.upXlsxData);                        // 上传xlsx-data
   router.post('/queryUser', controller.home.queryUser);   
   router.post('/saveUserPhoto', controller.home.saveUserPhoto); 
+  router.post('/saveContractTemplate', controller.home.saveContractTemplate); 
+  router.post('/saveUserTemplate', controller.home.saveUserTemplate); 
 };

@@ -6,17 +6,22 @@ module.exports = app => {
     STRING,
     DATE
   } = app.Sequelize;
-  const dt_user = app.model.define('dt_user', {
+  const dt_contract = app.model.define('dt_contract', {
     // id: {
     //   type: INTEGER,
     //   allowNull: false,
     //   autoIncrement: true,
     // },
-    userId: {
-      field: 'userId',
+    contractNo: {
+      field: 'contractNo',
       type: STRING,
       primaryKey: true,
       allowNull: false,
+    },
+    userId: {
+      field: 'userId',
+      type: STRING,
+      allowNull: true,
     },
     userNo: {
       field: 'userNo',
@@ -72,6 +77,11 @@ module.exports = app => {
     },
     userTelephone: {
       field: 'userTelephone',
+      type: STRING,
+      allowNull: true
+    },
+    months: {
+      field: 'months',
       type: STRING,
       allowNull: true
     },
@@ -346,9 +356,9 @@ module.exports = app => {
       allowNull: true
     },
   }, {
-      tableName: 'dt_user',
+      tableName: 'dt_contract',
       freezeTableName: true, // Model 对应的表名将与model名相同
       timestamps: true,//去除createAt updateAt
     });
-  return dt_user;
+  return dt_contract;
 };

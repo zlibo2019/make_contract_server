@@ -41,7 +41,39 @@ export default class HomeController extends Controller {
     const { ctx } = this;
     let body = ctx.request.body;
     // console.log('body' + JSON.stringify(ctx.request.body));
-    let jResult = await ctx.service.serviceCommon.saveUserPhoto(body.user_id, body.base64_1,body.base64_2,body.base64_3);
+    let jResult = await ctx.service.serviceCommon.saveUserPhoto(body.userId, body.base64_1,body.base64_2,body.base64_3);
+    // let filePath = jResult.data;
+    // let file = fs.readFileSync(filePath);
+    ctx.success(jResult);//jResult.data;   // file buf
+  }
+
+  async saveContractTemplate() {
+    const { ctx } = this;
+     let body = ctx.request.body;
+
+    // @ts-ignore
+    //const file = ctx.request.files[0];
+
+    //let filePath = file.filepath;
+
+    // console.log('body' + JSON.stringify(ctx.request.body));
+    let jResult = await ctx.service.serviceCommon.saveContractTemplate(body.base64_1);
+    // let filePath = jResult.data;
+    // let file = fs.readFileSync(filePath);
+    ctx.success(jResult);//jResult.data;   // file buf
+  }
+
+  async saveUserTemplate() {
+    const { ctx } = this;
+     let body = ctx.request.body;
+
+    // @ts-ignore
+    //const file = ctx.request.files[0];
+
+    //let filePath = file.filepath;
+
+    // console.log('body' + JSON.stringify(ctx.request.body));
+    let jResult = await ctx.service.serviceCommon.saveUserTemplate(body.base64_1);
     // let filePath = jResult.data;
     // let file = fs.readFileSync(filePath);
     ctx.success(jResult);//jResult.data;   // file buf

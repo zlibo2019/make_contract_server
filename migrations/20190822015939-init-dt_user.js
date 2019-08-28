@@ -5,7 +5,7 @@ module.exports = {
     const {
       STRING,
     } = Sequelize;
-    return queryInterface.createTable('dt_user', {
+    return queryInterface.createTable('dt_contract', {
       id: Sequelize.INTEGER,
       userNo: {
         type: STRING,
