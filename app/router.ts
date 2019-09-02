@@ -5,10 +5,11 @@
  */
 module.exports = app => {
   const { router, controller } = app;
-  router.post('/makeDocx', controller.home.makeDocx);                        // 下载xlsx
-  router.post('/upXlsxData', controller.home.upXlsxData);                        // 上传xlsx-data
-  router.post('/queryUser', controller.home.queryUser);   
-  router.post('/saveUserPhoto', controller.home.saveUserPhoto); 
-  router.post('/saveContractTemplate', controller.home.saveContractTemplate); 
-  router.post('/saveUserTemplate', controller.home.saveUserTemplate); 
+  router.post('/makeContract', controller.contract.makeContract);                        // 生成合同
+  router.post('/saveContractList', controller.contract.saveContractList);                        // 上传xlsx-data
+  router.post('/queryContractList', controller.contract.queryContractList);   
+  router.post('/savePhoto', controller.contract.savePhoto); 
+  router.post('/saveContractTemplate', controller.contract.saveContractTemplate); 
+  router.post('/saveContractListTemplate', controller.contract.saveContractListTemplate); 
+  router.post('/account/loginCheck', controller.account.loginCheck); 
 };

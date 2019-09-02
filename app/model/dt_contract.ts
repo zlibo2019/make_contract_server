@@ -4,7 +4,8 @@
 module.exports = app => {
   const {
     STRING,
-    DATE
+    DATE,
+    INTEGER
   } = app.Sequelize;
   const dt_contract = app.model.define('dt_contract', {
     // id: {
@@ -17,6 +18,11 @@ module.exports = app => {
       type: STRING,
       primaryKey: true,
       allowNull: false,
+    },
+    regId:{
+      field: 'regId',
+      type: INTEGER,
+      allowNull: true,
     },
     userId: {
       field: 'userId',
