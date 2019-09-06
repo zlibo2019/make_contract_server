@@ -27,6 +27,18 @@ export default (appInfo: EggAppInfo) => {
     jsonLimit: '50mb',
     formLimit: '50mb',
   };
+
+  config.multipart = {
+    mode: 'file',
+  };
+
+  config.cluster = {
+    listen: {
+      port: 7007,
+      // hostname: '127.0.0.1',
+    }
+  };
+
   config.cors = {
     origin: '*',
     allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH'

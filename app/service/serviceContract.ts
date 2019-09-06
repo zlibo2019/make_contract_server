@@ -5,6 +5,7 @@ const Zip = require('jszip');
 const Docxtemplater = require('docxtemplater');
 const ImageModule = require('open-docxtemplater-image-module');
 const path = require('path');
+const moment = require('moment');
 
 export default class ContractService extends Service {
   /**
@@ -67,7 +68,7 @@ export default class ContractService extends Service {
       doc.render();
       var buf = doc.getZip().generate({ type: 'nodebuffer' });
       fs.writeFileSync(path.join(dirTo, `${contractNo}.docx`), buf);
-      jResult.data = `http://127.0.0.1:7001/public/docx/contract/${userId}/${contractNo}.docx`;
+      jResult.data = `http://10.18.0.2:7007/public/docx/contract/${userId}/${contractNo}.docx`;
     } catch (error) {
       jResult.code = 601;
       jResult.msg = error.stack;
@@ -95,7 +96,6 @@ export default class ContractService extends Service {
       ctx.model.DtContract.removeAttribute('id');
       for (let i = 0; i < contractList.length; i++) {
         let curContract = JSON.parse(JSON.stringify(contractList[i]));
-
         curContract.regId = regId;
         await ctx.model.DtContract.upsert(curContract);
       }
@@ -170,10 +170,13 @@ export default class ContractService extends Service {
         fs.writeFileSync(path.join(dir, 'sfz2.jpg'), dataBuffer);
       }
 
+
+
       if (base64_3 !== null) {
+        let time = moment().format('YYYYMMDDHHmmss');
         base64_3 = base64_3.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
         let dataBuffer = new Buffer(base64_3, 'base64');
-        fs.writeFileSync(path.join(dir, `${contractNo}.contract.jpg`), dataBuffer);
+        fs.writeFileSync(path.join(dir, `${contractNo}_${time}.contract.jpg`), dataBuffer);
       }
     } catch (error) {
       jResult.code = 601;
@@ -248,4 +251,53 @@ export default class ContractService extends Service {
     }
     return jResult;
   }
+
+  /**
+* #  列出合同照片
+*/
+  async listContractFileName(regId, userId) {
+    // const { ctx } = this;
+    regId;
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
+    try {
+      let extDir = `../public/photo/${userId}`;
+      var param = path.resolve(__dirname, extDir);
+      let arrFileName = new Array();
+      return new Promise((resolve, reject) => {
+        fs.stat(param, function (err, stats) {
+          if (err) {
+            reject(err);
+          }
+          if (stats.isDirectory()) {
+            fs.readdir(param, function (err, files) {
+              if (err) {
+                reject(err);
+              }
+              files.forEach(e => {
+                console.log(e);
+                // let url = path.resolve(path.join(param, e));
+                if (e !== "sfz1.jpg" && e !== "sfz2.jpg") {
+                  arrFileName.push(e);
+                }
+              });
+              jResult.data = arrFileName;
+              console.log(arrFileName);
+              resolve(jResult);
+            });
+          }
+        });
+      });
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      console.log(JSON.stringify(error.stack));
+      jResult.data = null;
+    }
+  }
+
 }

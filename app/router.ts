@@ -12,4 +12,5 @@ module.exports = app => {
   router.post('/saveContractTemplate', controller.contract.saveContractTemplate); 
   router.post('/saveContractListTemplate', controller.contract.saveContractListTemplate); 
   router.post('/account/loginCheck', controller.account.loginCheck); 
+  router.post('/contract/listContractFileName', controller.contract.listContractFileName); 
 };

@@ -80,4 +80,20 @@ export default class ContractController extends Controller {
     // let file = fs.readFileSync(filePath);
     ctx.success(jResult);//jResult.data;   // file buf
   }
+
+  async listContractFileName() {
+    const { ctx } = this;
+    let body = ctx.request.body;
+
+    // @ts-ignore
+    //const file = ctx.request.files[0];
+
+    //let filePath = file.filepath;
+
+    // console.log('body' + JSON.stringify(ctx.request.body));
+    let jResult = await ctx.service.serviceContract.listContractFileName(body.regId, body.userId);
+    // let filePath = jResult.data;
+    // let file = fs.readFileSync(filePath);
+    ctx.success(jResult);//jResult.data;   // file buf
+  }
 }
