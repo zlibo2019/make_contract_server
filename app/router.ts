@@ -5,7 +5,7 @@
  */
 module.exports = app => {
   const { router, controller } = app;
-  router.post('/makeContract', controller.contract.makeContract);                        // 生成合同
+  router.post('/bulkMakeContract', controller.contract.bulkMakeContract);                        // 生成合同
   router.post('/saveContractList', controller.contract.saveContractList);                        // 上传xlsx-data
   router.post('/queryContractList', controller.contract.queryContractList);   
   router.post('/savePhoto', controller.contract.savePhoto); 

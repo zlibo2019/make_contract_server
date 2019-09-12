@@ -21,20 +21,52 @@ export default (appInfo: EggAppInfo) => {
       enable: false,
       ignoreJSON: true
     },
-    domainWhiteList: ['http://10.1.0.16:8092']
+    // domainWhiteList: ['http://10.1.0.16:8092']
   };
   config.bodyParser = {
     jsonLimit: '50mb',
     formLimit: '50mb',
   };
 
+  config.whitelist = [
+    // images
+    // '.jpg', '.jpeg', // image/jpeg
+    // '.png', // image/png, image/x-png
+    // '.gif', // image/gif
+    // '.bmp', // image/bmp
+    // '.wbmp', // image/vnd.wap.wbmp
+    // '.webp',
+    // '.tif',
+    // '.psd',
+    // // text
+    // '.svg',
+    // '.js', '.jsx',
+    // '.json',
+    // '.css', '.less',
+    // '.html', '.htm',
+    // '.xml',
+    // // tar
+    // '.zip',
+    // '.gz', '.tgz', '.gzip',
+    // // video
+    // '.mp3',
+    // '.mp4',
+    // '.avi',
+    '.xlsx',
+    '.docx',
+  ];
+
   config.multipart = {
     mode: 'file',
+    fileExtensions: [
+      '.xlsx',
+      '.docx',
+    ],
   };
 
   config.cluster = {
     listen: {
-      port: 7007,
+      port: 15007,
       // hostname: '127.0.0.1',
     }
   };

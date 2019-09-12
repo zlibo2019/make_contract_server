@@ -17,8 +17,10 @@
     "egg-sequelize": "^5.2.0",
     "jszip": "^2.6.1",
     "mysql2": "^1.6.5",
+    "node-xlsx": "^0.15.0",
     "open-docxtemplater-image-module": "^1.0.3",
-    "sequelize": "^5.15.2"
+    "sequelize": "^5.15.2",
+    "xlsx": "^0.15.1"
   },
   "devDependencies": {
     "autod": "^3.0.1",
@@ -36,8 +38,8 @@
   "scripts": {
     "start": "egg-scripts start --daemon --title=egg-server-make_contract_server",
     "stop": "egg-scripts stop --title=egg-server-make_contract_server",
-    "dev": "egg-bin dev --port=7007",
-    "debug": "egg-bin debug --port=7007",
+    "dev": "egg-bin dev --port=15007",
+    "debug": "egg-bin debug --port=15007",
     "test": "npm run lint -- --fix && npm run test-local",
     "test-local": "egg-bin test",
     "cov": "egg-bin cov",

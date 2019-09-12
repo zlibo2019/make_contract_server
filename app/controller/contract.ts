@@ -1,16 +1,17 @@
 'use strict';
 
 const Controller = require('egg').Controller;
-// var fs = require('fs');
+const fs = require('fs');
+import { IResult } from '../extend/helper';
 
 export default class ContractController extends Controller {
-  async makeContract() {
+  async bulkMakeContract() {
     const { ctx } = this;
-    let contract = ctx.request.body;
+    let arrContract = ctx.request.body;
 
 
     // console.log('body' + JSON.stringify(ctx.request.body));
-    let jResult = ctx.service.serviceContract.makeContract(contract);
+    let jResult = await ctx.service.serviceContract.bulkMakeContract(arrContract);
     // let filePath = jResult.data;
     // let file = fs.readFileSync(filePath);
     ctx.success(jResult);//jResult.data;   // file buf
@@ -19,9 +20,24 @@ export default class ContractController extends Controller {
 
   async saveContractList() {
     const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
     let body = ctx.request.body;
+    let file;
+    if (ctx.request.files.length > 0) {
+      file = ctx.request.files[0];
+    } else {
+      jResult.code = 601;
+      jResult.msg = 'file not found'
+      ctx.failed(jResult);//jResult.data; 
+    }
+    // let stream = fs.readFileSync(file.filepath);
     // console.log('body' + JSON.stringify(ctx.request.body));
-    let jResult = await ctx.service.serviceContract.saveContractList(body.regId, body.arrData);
+    jResult = await ctx.service.serviceContract.saveContractList(body.regId, file.filepath);
     // let filePath = jResult.data;
     // let file = fs.readFileSync(filePath);
     ctx.success(jResult);//jResult.data;   // file buf
@@ -30,10 +46,10 @@ export default class ContractController extends Controller {
 
   async queryContractList() {
     const { ctx } = this;
-    let condition = ctx.request.body;
+    let body = ctx.request.body;
     // console.log('body' + JSON.stringify(ctx.request.body));
     // let condition = body.condition;
-    let jResult = await ctx.service.serviceContract.queryContractList(condition);
+    let jResult = await ctx.service.serviceContract.queryContractList(body);
     // let filePath = jResult.data;
     // let file = fs.readFileSync(filePath);
     ctx.success(jResult);//jResult.data;   // file buf
@@ -51,15 +67,23 @@ export default class ContractController extends Controller {
 
   async saveContractTemplate() {
     const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
     let body = ctx.request.body;
-
-    // @ts-ignore
-    //const file = ctx.request.files[0];
-
-    //let filePath = file.filepath;
-
-    // console.log('body' + JSON.stringify(ctx.request.body));
-    let jResult = await ctx.service.serviceContract.saveContractTemplate(body.regId, body.base64_1);
+    let file;
+    if (ctx.request.files.length > 0) {
+      file = ctx.request.files[0];
+    } else {
+      jResult.code = 601;
+      jResult.msg = 'file not found'
+      ctx.failed(jResult);//jResult.data; 
+    }
+    let stream = fs.readFileSync(file.filepath);
+    jResult = await ctx.service.serviceContract.saveContractTemplate(body.regId, stream);
     // let filePath = jResult.data;
     // let file = fs.readFileSync(filePath);
     ctx.success(jResult);//jResult.data;   // file buf
@@ -67,15 +91,28 @@ export default class ContractController extends Controller {
 
   async saveContractListTemplate() {
     const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
     let body = ctx.request.body;
+    let file;
+    if (ctx.request.files.length > 0) {
+      file = ctx.request.files[0];
+    } else {
+      jResult.code = 601;
+      jResult.msg = 'file not found'
+      ctx.failed(jResult);//jResult.data; 
+    }
 
     // @ts-ignore
     //const file = ctx.request.files[0];
-
     //let filePath = file.filepath;
-
+    let stream = fs.readFileSync(file.filepath);
     // console.log('body' + JSON.stringify(ctx.request.body));
-    let jResult = await ctx.service.serviceContract.saveContractListTemplate(body.regId, body.base64_1);
+    jResult = ctx.service.serviceContract.saveContractListTemplate(body.regId, stream);
     // let filePath = jResult.data;
     // let file = fs.readFileSync(filePath);
     ctx.success(jResult);//jResult.data;   // file buf

@@ -1,17 +1,21 @@
 import { Service } from 'egg';
+// import xlsx from 'node-xlsx';
 import { IResult } from '../extend/helper';
+const xlsx = require('xlsx');
 const fs = require('fs');
 const Zip = require('jszip');
 const Docxtemplater = require('docxtemplater');
 const ImageModule = require('open-docxtemplater-image-module');
 const path = require('path');
+const compressing = require('compressing');
 const moment = require('moment');
+const Sequelize = require('sequelize');
 
 export default class ContractService extends Service {
   /**
    * # 生成合同
    */
-  makeContract(contract) {
+  makeContract(contract, tmpDirName) {
     // const { ctx } = this;
     let jResult: IResult
       = {
@@ -67,8 +71,9 @@ export default class ContractService extends Service {
       doc.setData(contract);
       doc.render();
       var buf = doc.getZip().generate({ type: 'nodebuffer' });
-      fs.writeFileSync(path.join(dirTo, `${contractNo}.docx`), buf);
-      jResult.data = `http://10.18.0.2:7007/public/docx/contract/${userId}/${contractNo}.docx`;
+      jResult.data = buf;
+      fs.writeFileSync(path.join(tmpDirName, `${contractNo}.docx`), buf);
+      // jResult.data = `http://10.18.0.2:15007/public/docx/contract/${userId}/${contractNo}.docx`;
     } catch (error) {
       jResult.code = 601;
       jResult.msg = error.stack;
@@ -78,52 +83,189 @@ export default class ContractService extends Service {
     return jResult;
   }
 
+
+
+
+
+  async bulkMakeContract(arrContract) {
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
+
+    try {
+      let dirTo = path.resolve(__dirname, `../public/docx/contract/tmp`);
+      let sj = moment().format('YYYYMMDDHHmmss');
+      let tmpDirName = path.join(dirTo, sj);
+      // 创建目录 
+      if (!fs.existsSync(tmpDirName)) {
+        fs.mkdirSync(tmpDirName, { recursive: true });
+      };
+      for (let i = 0; i < arrContract.length; i++) {
+        const contract = arrContract[i];
+        let jResult = this.makeContract(contract, tmpDirName);
+        if (jResult.code !== 600) {
+
+        }
+      }
+
+      return new Promise((resolve, reject) => {
+        compressing.zip.compressDir(tmpDirName, `${tmpDirName}.zip`)
+          .then(() => {
+            jResult.data = `http://47.104.157.222:15007/public/docx/contract/tmp/${sj}.zip`;
+            resolve(jResult);
+          })
+          .catch(err => {
+            jResult.code = 601;
+            jResult.msg = err;
+            reject(jResult);
+          });
+      })
+
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      return jResult;
+    }
+  }
+
+
+
+  /**
+   * # 将电子表格数据放到数组，并翻译班级名称为班级id
+   */
+  async getArrExcel(filePath: string) {
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
+
+    try {
+      let data = {};
+      let workbook = xlsx.readFile(filePath); //workbook就是xls文档对象
+      let sheetNames = workbook.SheetNames; //获取表明
+      let sheet = workbook.Sheets[sheetNames[0]]; //通过表明得到表对象
+      let arrContent = xlsx.utils.sheet_to_json(sheet); //通过工具将表对象的数据读出来并转成json
+      sheet = workbook.Sheets[sheetNames[1]]; //通过表明得到表对象
+      let arrField = xlsx.utils.sheet_to_json(sheet); //通过工具将表对象的数据读出来并转成json
+      // @ts-ignore
+      data.arrContent = arrContent;
+      // @ts-ignore
+      data.arrField = arrField;
+      jResult.data = data;
+      return jResult;
+    } catch (err) {
+      jResult.code = 601;
+      jResult.msg = err.stack;
+      jResult.data = null;
+      return jResult;
+    } finally {
+      await this.ctx.service.serviceCommon.remove(filePath);
+    }
+  };
+
+
+
+
+  /**
+  * # 导入合同
+  */
+  async saveContractList(regId, filePath) {
+    const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
+
+    try {
+      ctx.model.DtContract.removeAttribute('id');
+      jResult = await this.getArrExcel(filePath);
+      if (jResult.code !== 600) {
+        return jResult;
+      }
+      let data = jResult.data;
+
+      // 解析字段配置
+      let arrField = data.arrField;
+      let arrContract = data.arrContent;
+      // let arrContract = new Array();
+      for (let i = 0; i < arrContract.length; i++) {
+        let curXlsxContract = arrContract[i];
+        let curTableContract = {};
+
+        for (let j = 0; j < arrField.length; j++) {
+          let curTableField = arrField[j].数据库字段名.replace(
+            /^\s*|\s*$/g,
+            ""
+          ); // 去除两边空格
+          let curXlsxField = arrField[j].合同导入字段名.replace(
+            /^\s*|\s*$/g,
+            ""
+          ); // 去除两边空格
+          curTableContract[curTableField] = curXlsxContract[curXlsxField];
+        }
+        curTableContract["regId"] = regId;
+        await ctx.model.DtContract.upsert(curTableContract);
+      }
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      console.log(JSON.stringify(error.stack));
+      jResult.data = null;
+    }
+    return jResult;
+  }
 
   /**
   * # 
   */
-  async saveContractList(regId, contractList) {
+  async queryContractList(body) {
     const { ctx } = this;
+    // @ts-ignore
+    const Op = Sequelize.Op;
     let jResult: IResult
       = {
       code: 600,
       msg: '',
       data: null
     };
-
-
-    try {
-      ctx.model.DtContract.removeAttribute('id');
-      for (let i = 0; i < contractList.length; i++) {
-        let curContract = JSON.parse(JSON.stringify(contractList[i]));
-        curContract.regId = regId;
-        await ctx.model.DtContract.upsert(curContract);
+    body;
+    let regId = body.regId;
+    let fuzzyCondition = body.fuzzyCondition;
+    let condition;
+    if (fuzzyCondition === '') {
+      condition = {
+        regId: regId
+      };
+    } else {
+      condition = {
+        regId: regId,
+        [Op.or]:
+          [{
+            userId: {
+              [Op.like]: `%${fuzzyCondition}%`
+            }
+          },
+          {
+            userName: {
+              [Op.like]: `%${fuzzyCondition}%`
+            }
+          },
+          {
+            contractNo: {
+              [Op.like]: `%${fuzzyCondition}%`
+            }
+          }]
       }
-      // await ctx.model.DtContract.bulkCreate(docxData);
-    } catch (error) {
-      jResult.code = 601;
-      jResult.msg = error.stack;
-      console.log(JSON.stringify(error.stack));
-      jResult.data = null;
     }
-    return jResult;
-  }
-
-  /**
- * # 
- */
-  async queryContractList(condition) {
-    const { ctx } = this;
-    let jResult: IResult
-      = {
-      code: 600,
-      msg: '',
-      data: null
-    };
-    condition;
-
     try {
-
+      // condition;
       let res = await ctx.model.DtContract.findAll({ where: condition });
       let arrContract = new Array();
       for (let i = 0; i < res.length; i++) {
@@ -140,8 +282,8 @@ export default class ContractService extends Service {
   }
 
   /**
-* # 
-*/
+  * # 
+  */
   async savePhoto(userId, contractNo, base64_1, base64_2, base64_3) {
     // const { ctx } = this;
     let jResult: IResult
@@ -188,9 +330,42 @@ export default class ContractService extends Service {
   }
 
   /**
-* #  保存合同模板（docx）
-*/
-  async saveContractTemplate(regId, base64_1) {
+  * #  保存合同模板（docx）
+  */
+  async saveContractTemplate(regId, fromFile) {
+    // const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
+    try {
+      let dir = path.resolve(__dirname, `../public/docx/template/${regId}`);
+      // 创建目录 
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      };
+      fs.writeFileSync(path.join(dir, 'template_contract.docx'), fromFile);
+      // // 文件复制
+      // if (fromFile !== null) {
+      //   let dataBuffer = new Buffer(fromFile, 'base64');
+      //   fs.writeFileSync(path.join(dir, 'template_contract.docx'), dataBuffer);
+      // }
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      console.log(JSON.stringify(error.stack));
+      jResult.data = null;
+    }
+    return jResult;
+  }
+
+
+  /**
+  * #  保存合同列表模板（xlsx）
+  */
+  saveContractListTemplate(regId, fromFile) {
     // const { ctx } = this;
     let jResult: IResult
       = {
@@ -206,43 +381,11 @@ export default class ContractService extends Service {
       };
 
       // 文件复制
-      if (base64_1 !== null) {
-        let dataBuffer = new Buffer(base64_1, 'base64');
-        fs.writeFileSync(path.join(dir, 'template_contract.docx'), dataBuffer);
-      }
-    } catch (error) {
-      jResult.code = 601;
-      jResult.msg = error.stack;
-      console.log(JSON.stringify(error.stack));
-      jResult.data = null;
-    }
-    return jResult;
-  }
-
-
-  /**
-* #  保存合同列表模板（xlsx）
-*/
-  async saveContractListTemplate(regId, base64_1) {
-    // const { ctx } = this;
-    let jResult: IResult
-      = {
-      code: 600,
-      msg: '',
-      data: null
-    };
-    try {
-      let dir = path.resolve(__dirname, `../public/docx/template/${regId}`);
-      // 创建目录 
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      };
-
-      // 文件复制
-      if (base64_1 !== null) {
-        let dataBuffer = new Buffer(base64_1, 'base64');
-        fs.writeFileSync(path.join(dir, 'template_contract_list.xlsx'), dataBuffer);
-      }
+      // if (base64_1 !== null) {
+      //   let dataBuffer = new Buffer(base64_1, 'base64');
+      //   fs.writeFileSync(path.join(dir, 'template_contract_list.xlsx'), dataBuffer);
+      // }
+      fs.writeFileSync(path.join(dir, 'template_contract_list.xlsx'), fromFile);
     } catch (error) {
       jResult.code = 601;
       jResult.msg = error.stack;
@@ -253,8 +396,8 @@ export default class ContractService extends Service {
   }
 
   /**
-* #  列出合同照片
-*/
+  * #  列出合同照片
+  */
   async listContractFileName(regId, userId) {
     // const { ctx } = this;
     regId;
