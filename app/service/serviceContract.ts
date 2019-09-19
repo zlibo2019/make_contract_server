@@ -284,7 +284,7 @@ export default class ContractService extends Service {
   /**
   * # 
   */
-  async savePhoto(userId, contractNo, base64_1, base64_2, base64_3) {
+  async savePhoto(regId, userId, contractNo, base64_1, base64_2, base64_3) {
     // const { ctx } = this;
     let jResult: IResult
       = {
@@ -300,13 +300,13 @@ export default class ContractService extends Service {
         fs.mkdirSync(dir, { recursive: true });
       };
 
-      if (base64_1 !== null) {
+      if (base64_1 !== null && undefined !== base64_1) {
         base64_1 = base64_1.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
         let dataBuffer = new Buffer(base64_1, 'base64');
         fs.writeFileSync(path.join(dir, 'sfz1.jpg'), dataBuffer);
       }
 
-      if (base64_2 !== null) {
+      if (base64_2 !== null && undefined !== base64_2) {
         base64_2 = base64_2.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
         let dataBuffer = new Buffer(base64_2, 'base64');
         fs.writeFileSync(path.join(dir, 'sfz2.jpg'), dataBuffer);
@@ -314,11 +314,15 @@ export default class ContractService extends Service {
 
 
 
-      if (base64_3 !== null) {
+      if (base64_3 !== null && undefined !== base64_3) {
         let time = moment().format('YYYYMMDDHHmmss');
         base64_3 = base64_3.replace(/^data:image\/\w+;base64,/, "");//去掉图片base64码前面部分data:image/png;base64
         let dataBuffer = new Buffer(base64_3, 'base64');
-        fs.writeFileSync(path.join(dir, `${contractNo}_${time}.contract.jpg`), dataBuffer);
+        let fileName = path.join(dir, `${contractNo}_${time}.contract.jpg`);
+        fs.writeFileSync(fileName, dataBuffer);
+// console.log('regid'+regId);
+        await this.syncContractPhoto(userId, regId.toString(), contractNo, fileName);
+
       }
     } catch (error) {
       jResult.code = 601;
@@ -327,6 +331,152 @@ export default class ContractService extends Service {
       jResult.data = null;
     }
     return jResult;
+  }
+
+  async getUserSerialByUserId(userId) {
+    const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 601,
+      msg: '',
+      data: null
+    };
+    try {
+      let res = await ctx.platModel.DtUser.findOne({
+        attributes: ['user_serial'],
+        where: {
+          user_id: userId,
+        }
+      })
+      if (undefined !== res && null !== res) {
+        jResult.code = 600;
+        jResult.data = res.user_serial;
+      }
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      console.log(JSON.stringify(error.stack));
+      jResult.data = null;
+    }
+    return jResult;
+  }
+
+  async getProjectNoByGlyNo(glyNo) {
+    const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 601,
+      msg: '',
+      data: null
+    };
+    try {
+      let res = await ctx.platModel.DtPro.findOne({
+        attributes: ['bh'],
+        where: {
+          pro_mj: glyNo,
+        }
+      })
+      if (undefined !== res && null !== res) {
+        jResult.code = 600;
+        jResult.data = res.bh;
+      }
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      console.log(JSON.stringify(error.stack));
+      jResult.data = null;
+    }
+    return jResult;
+  }
+
+  async getMaxContractNameByUserSerial(userSerial) {
+    const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 601,
+      msg: '',
+      data: null
+    };
+    try {
+      let res = await ctx.platModel.DtContract.findOne({
+        attributes: ['contract_name'],
+        where: {
+          user_serial: userSerial,
+        },
+        order: [['contract_name', 'DESC'],],
+      })
+      if (undefined !== res && null !== res) {
+        jResult.code = 600;
+        let contractName = res.contract_name;
+        let rightStr = contractName.split("_")[1];
+        let newNum = Number(rightStr.split(".")[0]) + 1;
+        let newName = `${contractName.split("_")[0]}_${newNum}`;
+        jResult.data = newName;
+      }
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      console.log(JSON.stringify(error.stack));
+      jResult.data = null;
+    }
+    return jResult;
+  }
+
+
+  async syncContractPhoto(userId, glyNo, contractNo, fromFilePath) {
+    const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
+    try {
+      jResult = await this.getUserSerialByUserId(userId);
+      if (jResult.code !== 600) {
+        return jResult;
+      }
+      let userSerial = jResult.data;
+
+      jResult = await this.getProjectNoByGlyNo(glyNo);
+      if (jResult.code !== 600) {
+        return jResult;
+      }
+      let projectNo = jResult.data;
+
+      let maxProjectName;
+      jResult = await this.getMaxContractNameByUserSerial(userSerial);
+      if (jResult.code !== 600) {
+        maxProjectName = `${userId}_1`;
+      } else {
+        maxProjectName = jResult.data;
+      }
+
+      await ctx.platModel.DtContract.create({
+        lx: 0,
+        user_serial: userSerial,
+        reg_serial: projectNo,
+        contract_name: `${maxProjectName}.jpg`,
+        contract_path: `../contract/${projectNo}/${userSerial}/`,
+        contract_bh: contractNo,
+      })
+      // 文件复制
+      let dir = path.join(this.config.program.platContractPhotoPath, `/contract/${projectNo}/${userSerial}/`);
+      let fromFile = fs.readFileSync(fromFilePath);
+      // 创建目录 
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      };
+      fs.writeFileSync(path.join(dir, `${maxProjectName}.jpg`), fromFile);
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      console.log(JSON.stringify(error.stack));
+      jResult.data = null;
+    }
+    return jResult;
+
+
   }
 
   /**

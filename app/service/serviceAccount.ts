@@ -19,12 +19,22 @@ export default class AccountService extends Service {
     let userName = account.userName;
     let password = account.password;
     try {
-      let res = await ctx.model.DtReg.findOne({
-        where: {
-          account: userName,
-          pwd: password,
-        }
-      });
+      let res;
+      if (this.config.program.isConnectedPlat) {
+        res = await ctx.platModel.WtGly.findOne({
+          where: {
+            account: userName,
+            pwd: password,
+          }
+        });
+      } else {
+        res = await ctx.model.DtReg.findOne({
+          where: {
+            account: userName,
+            pwd: password,
+          }
+        });
+      }
       if (undefined !== res && null !== res) {
         jResult.data = res;
 

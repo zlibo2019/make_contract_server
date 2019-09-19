@@ -59,7 +59,7 @@ export default class ContractController extends Controller {
     const { ctx } = this;
     let body = ctx.request.body;
     // console.log('body' + JSON.stringify(ctx.request.body));
-    let jResult = await ctx.service.serviceContract.savePhoto(body.userId, body.contractNo, body.base64_1, body.base64_2, body.base64_3);
+    let jResult = await ctx.service.serviceContract.savePhoto(body.regId,body.userId, body.contractNo, body.base64_1, body.base64_2, body.base64_3);
     // let filePath = jResult.data;
     // let file = fs.readFileSync(filePath);
     ctx.success(jResult);//jResult.data;   // file buf

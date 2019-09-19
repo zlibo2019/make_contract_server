@@ -20,6 +20,7 @@
     "node-xlsx": "^0.15.0",
     "open-docxtemplater-image-module": "^1.0.3",
     "sequelize": "^5.15.2",
+    "tedious": "^6.4.0",
     "xlsx": "^0.15.1"
   },
   "devDependencies": {

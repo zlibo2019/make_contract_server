@@ -75,15 +75,49 @@ export default (appInfo: EggAppInfo) => {
     origin: '*',
     allowMethods: 'GET,HEAD,PUT,POST,DELETE,PATCH'
   };
+  // config.sequelize = {
+  //   dialect: 'mysql', // support: mysql, mariadb, postgres, mssql
+  //   database: 'scm_main_gd',
+  //   host: '127.0.0.1',
+  //   port: 3306,
+  //   username: 'root',
+  //   password: '123456',
+  //   logging: true,
+  // };
+
+
   config.sequelize = {
-    dialect: 'mysql', // support: mysql, mariadb, postgres, mssql
-    database: 'scm_main_gd',
-    host: '127.0.0.1',
-    port: 3306,
-    username: 'root',
-    password: '123456',
-    logging: true,
+    datasources: [
+      {
+        delegate: 'model', // load all models to app.model and ctx.model
+        baseDir: 'model', // load models from `app/model/*.js`
+        database: 'scm_main_gd',
+        dialect: 'mysql', // support: mysql, mariadb, postgres, mssql
+        host: '127.0.0.1',
+        port: 3306,
+        username: 'root',
+        password: '123456',
+        logging: true,
+      },
+      {
+        delegate: 'platModel', // load all models to app.adminModel and ctx.adminModel
+        baseDir: 'plat_model', // load models from `app/admin_model/*.js`
+        database: 'scm_main_烟台',
+        dialect: 'mssql', // support: mysql, mariadb, postgres, mssql
+        host: '10.18.0.5',
+        port: 1433,
+        username: 'sa',
+        password: '123456',
+        logging: true,
+      },
+    ],
   };
+
+  config.program = {
+    isConnectedPlat:true,
+    platContractPhotoPath:'c://aa'
+  }
+
 
   return {
     ...config,
