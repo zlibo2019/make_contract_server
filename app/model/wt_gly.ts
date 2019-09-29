@@ -7,33 +7,32 @@ module.exports = app => {
     DATE,
     INTEGER
   } = app.Sequelize;
-  const dt_reg = app.model.define('dt_reg', {
+  const wt_gly = app.model.define('wt_gly', {
     id: {
       type: INTEGER,
       allowNull: false,
       autoIncrement: true,
     },
-    enterpriseNo: {
-      field: 'enterpriseNo',
+    gly_no: {
+      field: 'gly_no',
       type: STRING,
       primaryKey: true,
       allowNull: false,
     },
-    enterpriseName: {
-      field: 'enterpriseName',
+    gly_name: {
+      field: 'gly_name',
       type: STRING,
       allowNull: true,
     },
-    account: {
-      field: 'account',
+    gly_pass: {
+      field: 'gly_pass',
       type: STRING,
       allowNull: true
     },
-
-    pwd: {
-      field: 'pwd',
-      type: STRING,
-      allowNull: true
+    gly_regserial: {
+      field: 'gly_regserial',
+      type: INTEGER,
+      allowNull: true,
     },
     createdAt: {
       field: 'createdAt',
@@ -46,9 +45,9 @@ module.exports = app => {
       allowNull: true
     },
   }, {
-      tableName: 'dt_reg',
+      tableName: 'wt_gly',
       freezeTableName: true, // Model 对应的表名将与model名相同
       timestamps: true,//去除createAt updateAt
     });
-  return dt_reg;
+  return wt_gly;
 };

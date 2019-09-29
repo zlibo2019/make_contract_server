@@ -21,7 +21,7 @@ export default (appInfo: EggAppInfo) => {
       enable: false,
       ignoreJSON: true
     },
-    // domainWhiteList: ['http://10.1.0.16:8092']
+    domainWhiteList: ['http://localhost:15007']
   };
   config.bodyParser = {
     jsonLimit: '50mb',
@@ -104,18 +104,26 @@ export default (appInfo: EggAppInfo) => {
         baseDir: 'plat_model', // load models from `app/admin_model/*.js`
         database: 'scm_main_烟台',
         dialect: 'mssql', // support: mysql, mariadb, postgres, mssql
-        host: '10.18.0.5',
+        host: '10.18.0.5',     // 服务器
         port: 1433,
-        username: 'sa',
-        password: '123456',
+        username: 'sa',        // 用户名
+        password: '123456',       // 密码
+        // dialectOptions: {
+        //   options: {
+        //     instanceName: 'sql2014',    // 实例名
+        //     connectTimeout: 600000,      // 连接超时时间
+        //     requestTimeout: 999999,     // 请求超时时间
+        //   },
+        // },
         logging: true,
       },
     ],
   };
 
   config.program = {
-    isConnectedPlat:true,
-    platContractPhotoPath:'c://aa'
+    isConnectedPlat: true,
+    platContractPhotoPath: 'c://aa',
+    webUrl:'127.0.0.1:15007',
   }
 
 

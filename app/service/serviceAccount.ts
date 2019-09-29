@@ -16,30 +16,74 @@ export default class AccountService extends Service {
     };
 
 
-    let userName = account.userName;
-    let password = account.password;
+    let glyNo = account.glyNo;
+    let glyPass = account.glyPass;
     try {
       let res;
+      let loginInfo = {};
       if (this.config.program.isConnectedPlat) {
         res = await ctx.platModel.WtGly.findOne({
           where: {
-            account: userName,
-            pwd: password,
+            gly_no: glyNo,
+            gly_pass: glyPass,
           }
         });
-      } else {
-        res = await ctx.model.DtReg.findOne({
-          where: {
-            account: userName,
-            pwd: password,
-          }
-        });
-      }
-      if (undefined !== res && null !== res) {
-        jResult.data = res;
+        if (undefined !== res && null !== res) {
+          // @ts-ignore
+          loginInfo.glyName = res.gly_lname;
+          // @ts-ignore
+          // let regSerial = res.gly_regserial;
 
+          res = await ctx.platModel.DtPro.findOne({
+            where: {
+              pro_mj: glyNo,
+            }
+          });
+          if (undefined !== res && null !== res) {
+            // @ts-ignore
+            loginInfo.projectName = res.pro_name;
+            //@ts-ignore
+            loginInfo.projectBh = res.bh;
+            jResult.data = loginInfo;
+          } else {
+            jResult.code = 601;
+            jResult.msg = '未找到对应项目';
+          }
+        } else {
+          jResult.code = 601;
+          jResult.msg = '登陆错误';
+        }
       } else {
-        jResult.code = 601;
+        res = await ctx.model.WtGly.findOne({
+          where: {
+            gly_no: glyNo,
+            gly_pass: glyPass,
+          }
+        });
+
+        if (undefined !== res && null !== res) {
+          // @ts-ignore
+          loginInfo.glyName = res.glyName;
+          // @ts-ignore
+          res = await ctx.platModel.DtProject.findOne({
+            where: {
+              gly_no: glyNo,
+            }
+          });
+          if (undefined !== res && null !== res) {
+            // @ts-ignore
+            loginInfo.projectName = res.project_name;
+            // @ts-ignore
+            loginInfo.projectBh = res.project_bh;
+            jResult.data = loginInfo;
+          } else {
+            jResult.code = 601;
+            jResult.msg = '未找到对应项目';
+          }
+        } else {
+          jResult.code = 601;
+          jResult.msg = '登陆错误';
+        }
       }
 
       return jResult;

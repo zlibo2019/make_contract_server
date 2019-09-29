@@ -6,31 +6,27 @@ module.exports = app => {
     INTEGER,
     STRING,
   } = app.Sequelize;
-  const wt_gly = app.platModel.define('wt_gly', {
-    gly_no: {
-      type: STRING,
+  const wt_reg = app.model.define('wt_reg', {
+    reg_serial: {
+      type: INTEGER,
       primaryKey: true,
       allowNull: false,
+      autoIncrement: true,
     },
-    gly_pass: {
-      field: 'gly_pass',
+    reg_no: {
+      field: 'reg_no',
       type: STRING,
       allowNull: true,
     },
-    gly_lname: {
-      field: 'gly_lname',
+    reg_unit: {
+      field: 'reg_unit',
       type: STRING,
-      allowNull: true,
-    },
-    gly_regserial: {
-      field: 'gly_regserial',
-      type: INTEGER,
       allowNull: true,
     },
   }, {
-    tableName: 'wt_gly',
+    tableName: 'wt_reg',
     freezeTableName: true, // Model 对应的表名将与model名相同
     timestamps: false,//去除createAt updateAt
   });
-  return wt_gly;
+  return wt_reg;
 };

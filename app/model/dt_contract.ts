@@ -5,7 +5,7 @@ module.exports = app => {
   const {
     STRING,
     DATE,
-    INTEGER
+    INTEGER,
   } = app.Sequelize;
   const dt_contract = app.model.define('dt_contract', {
     // id: {
@@ -19,9 +19,10 @@ module.exports = app => {
       primaryKey: true,
       allowNull: false,
     },
-    regId:{
-      field: 'regId',
+    projectBh: {
+      field: 'projectBh',
       type: INTEGER,
+      primaryKey: true,
       allowNull: true,
     },
     userId: {
@@ -362,9 +363,9 @@ module.exports = app => {
       allowNull: true
     },
   }, {
-      tableName: 'dt_contract',
-      freezeTableName: true, // Model 对应的表名将与model名相同
-      timestamps: true,//去除createAt updateAt
-    });
+    tableName: 'dt_contract',
+    freezeTableName: true, // Model 对应的表名将与model名相同
+    timestamps: true,//去除createAt updateAt
+  });
   return dt_contract;
 };

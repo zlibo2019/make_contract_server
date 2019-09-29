@@ -24,7 +24,7 @@ export default class ContractService extends Service {
       data: null
     };
 
-    let regId = contract.regId;
+    let projectBh = contract.projectBh;
     let userId = contract.userId;
     let contractNo = contract.contractNo;
     // let userName = user.user_name;
@@ -43,7 +43,7 @@ export default class ContractService extends Service {
         fs.mkdirSync(dirTo, { recursive: true });
       };
 
-      let templatePath = path.join(__dirname, `../public/docx/template/${regId}/template_contract.docx`);
+      let templatePath = path.join(__dirname, `../public/docx/template/${projectBh}/template_contract.docx`);
       // 自定义模板不存在则取公共模板
       if (!fs.existsSync(templatePath)) {
         templatePath = path.join(__dirname, `../public/docx/template/template_contract.docx`);
@@ -71,7 +71,7 @@ export default class ContractService extends Service {
       doc.setData(contract);
       doc.render();
       var buf = doc.getZip().generate({ type: 'nodebuffer' });
-      jResult.data = buf;
+      // jResult.data = buf;
       fs.writeFileSync(path.join(tmpDirName, `${contractNo}.docx`), buf);
       // jResult.data = `http://10.18.0.2:15007/public/docx/contract/${userId}/${contractNo}.docx`;
     } catch (error) {
@@ -114,7 +114,84 @@ export default class ContractService extends Service {
       return new Promise((resolve, reject) => {
         compressing.zip.compressDir(tmpDirName, `${tmpDirName}.zip`)
           .then(() => {
-            jResult.data = `http://47.104.157.222:15007/public/docx/contract/tmp/${sj}.zip`;
+            jResult.data = `http://${this.config.program.webUrl}/public/docx/contract/tmp/${sj}.zip`;
+            resolve(jResult);
+          })
+          .catch(err => {
+            jResult.code = 601;
+            jResult.msg = err;
+            reject(jResult);
+          });
+      })
+
+    } catch (error) {
+      jResult.code = 601;
+      jResult.msg = error.stack;
+      return jResult;
+    }
+  }
+
+
+
+  // async makeContractPhoto(userId, tmpDirName) {
+  //   const { ctx } = this;
+  //   let jResult: IResult
+  //     = {
+  //     code: 600,
+  //     msg: '',
+  //     data: null
+  //   };
+
+  //   // let fromDir = `http://${this.config.program.webUrl}/public/photo/${userId}`;
+  //   let fromDir = path.resolve(__dirname, `../public/photo/${userId}`);
+  //   try {
+
+
+  //     // await ctx.service.serviceCommon.exists(fromDir, `${tmpDirName}/${userId}`, ctx.service.serviceCommon.copy);
+  //     await ctx.service.serviceCommon.checkDirectory(fromDir, `${tmpDirName}/${userId}`, ctx.service.serviceCommon.copy);
+  //     return jResult;
+  //   } catch (error) {
+  //     jResult.code = 601;
+  //     jResult.msg = error.stack;
+  //     return jResult;
+  //   }
+  // }
+
+  async bulkMakeContractPhoto(arrContract) {
+    const { ctx } = this;
+    let jResult: IResult
+      = {
+      code: 600,
+      msg: '',
+      data: null
+    };
+
+    try {
+      let dirTo = path.resolve(__dirname, `../public/photo/tmp`);
+      let sj = moment().format('YYYYMMDDHHmmss');
+      let tmpDirName = path.join(dirTo, sj);
+      // 创建目录 
+      if (!fs.existsSync(tmpDirName)) {
+        fs.mkdirSync(tmpDirName, { recursive: true });
+      };
+      for (let i = 0; i < arrContract.length; i++) {
+        const contract = arrContract[i];
+        let userId = contract.userId;
+
+        let fromDir = path.resolve(__dirname, `../public/photo/${userId}`);
+        ctx.service.serviceCommon.copyFolder(fromDir, `${tmpDirName}/${userId}`);
+
+
+        // jResult = await this.makeContractPhoto(userId, tmpDirName);
+        // if (jResult.code !== 600) {
+
+        // }
+      }
+
+      return new Promise((resolve, reject) => {
+        compressing.zip.compressDir(tmpDirName, `${tmpDirName}.zip`)
+          .then(() => {
+            jResult.data = `http://${this.config.program.webUrl}/public/photo/tmp/${sj}.zip`;
             resolve(jResult);
           })
           .catch(err => {
@@ -164,7 +241,7 @@ export default class ContractService extends Service {
       jResult.data = null;
       return jResult;
     } finally {
-      await this.ctx.service.serviceCommon.remove(filePath);
+      await this.ctx.service.serviceCommon.removeFile(filePath);
     }
   };
 
@@ -174,7 +251,7 @@ export default class ContractService extends Service {
   /**
   * # 导入合同
   */
-  async saveContractList(regId, filePath) {
+  async saveContractList(projectBh, filePath) {
     const { ctx } = this;
     let jResult: IResult
       = {
@@ -208,9 +285,14 @@ export default class ContractService extends Service {
             /^\s*|\s*$/g,
             ""
           ); // 去除两边空格
+          // if (curTableField === '') {
+          //   continue;
+          // } else if (curXlsxField === '') {
+          //   curTableContract[curTableField] = '';
+          // }
           curTableContract[curTableField] = curXlsxContract[curXlsxField];
         }
-        curTableContract["regId"] = regId;
+        curTableContract["projectBh"] = projectBh;
         await ctx.model.DtContract.upsert(curTableContract);
       }
     } catch (error) {
@@ -236,16 +318,16 @@ export default class ContractService extends Service {
       data: null
     };
     body;
-    let regId = body.regId;
+    let projectBh = body.projectBh;
     let fuzzyCondition = body.fuzzyCondition;
     let condition;
     if (fuzzyCondition === '') {
       condition = {
-        regId: regId
+        projectBh: projectBh
       };
     } else {
       condition = {
-        regId: regId,
+        projectBh: projectBh,
         [Op.or]:
           [{
             userId: {
@@ -265,8 +347,8 @@ export default class ContractService extends Service {
       }
     }
     try {
-      // condition;
       let res = await ctx.model.DtContract.findAll({ where: condition });
+
       let arrContract = new Array();
       for (let i = 0; i < res.length; i++) {
         arrContract.push(res[i].dataValues);
@@ -284,7 +366,7 @@ export default class ContractService extends Service {
   /**
   * # 
   */
-  async savePhoto(regId, userId, contractNo, base64_1, base64_2, base64_3) {
+  async savePhoto(projectBh, userId, contractNo, base64_1, base64_2, base64_3) {
     // const { ctx } = this;
     let jResult: IResult
       = {
@@ -320,8 +402,8 @@ export default class ContractService extends Service {
         let dataBuffer = new Buffer(base64_3, 'base64');
         let fileName = path.join(dir, `${contractNo}_${time}.contract.jpg`);
         fs.writeFileSync(fileName, dataBuffer);
-// console.log('regid'+regId);
-        await this.syncContractPhoto(userId, regId.toString(), contractNo, fileName);
+        // console.log('projectBh'+projectBh);
+        await this.syncContractPhoto(userId, projectBh.toString(), contractNo, fileName);
 
       }
     } catch (error) {
@@ -337,7 +419,7 @@ export default class ContractService extends Service {
     const { ctx } = this;
     let jResult: IResult
       = {
-      code: 601,
+      code: 600,
       msg: '',
       data: null
     };
@@ -351,6 +433,10 @@ export default class ContractService extends Service {
       if (undefined !== res && null !== res) {
         jResult.code = 600;
         jResult.data = res.user_serial;
+      } else {
+        jResult.code = 601;
+        jResult.data = 0;
+        jResult.msg = 'user not find';
       }
     } catch (error) {
       jResult.code = 601;
@@ -365,7 +451,7 @@ export default class ContractService extends Service {
     const { ctx } = this;
     let jResult: IResult
       = {
-      code: 601,
+      code: 600,
       msg: '',
       data: null
     };
@@ -379,6 +465,10 @@ export default class ContractService extends Service {
       if (undefined !== res && null !== res) {
         jResult.code = 600;
         jResult.data = res.bh;
+      }else{
+        jResult.code = 601;
+        jResult.data = 0;
+        jResult.msg = 'not found';
       }
     } catch (error) {
       jResult.code = 601;
@@ -482,7 +572,7 @@ export default class ContractService extends Service {
   /**
   * #  保存合同模板（docx）
   */
-  async saveContractTemplate(regId, fromFile) {
+  async saveContractTemplate(projectBh, fromFile) {
     // const { ctx } = this;
     let jResult: IResult
       = {
@@ -491,7 +581,7 @@ export default class ContractService extends Service {
       data: null
     };
     try {
-      let dir = path.resolve(__dirname, `../public/docx/template/${regId}`);
+      let dir = path.resolve(__dirname, `../public/docx/template/${projectBh}`);
       // 创建目录 
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -515,7 +605,7 @@ export default class ContractService extends Service {
   /**
   * #  保存合同列表模板（xlsx）
   */
-  saveContractListTemplate(regId, fromFile) {
+  saveContractListTemplate(projectBh, fromFile) {
     // const { ctx } = this;
     let jResult: IResult
       = {
@@ -524,7 +614,7 @@ export default class ContractService extends Service {
       data: null
     };
     try {
-      let dir = path.resolve(__dirname, `../public/docx/template/${regId}`);
+      let dir = path.resolve(__dirname, `../public/docx/template/${projectBh}`);
       // 创建目录 
       if (!fs.existsSync(dir)) {
         fs.mkdirSync(dir, { recursive: true });
@@ -548,9 +638,9 @@ export default class ContractService extends Service {
   /**
   * #  列出合同照片
   */
-  async listContractFileName(regId, userId) {
+  async listContractFileName(projectBh, userId) {
     // const { ctx } = this;
-    regId;
+    projectBh;
     let jResult: IResult
       = {
       code: 600,
@@ -572,7 +662,7 @@ export default class ContractService extends Service {
                 reject(err);
               }
               files.forEach(e => {
-                console.log(e);
+                // console.log(e);
                 // let url = path.resolve(path.join(param, e));
                 if (e !== "sfz1.jpg" && e !== "sfz2.jpg") {
                   arrFileName.push(e);
@@ -592,5 +682,52 @@ export default class ContractService extends Service {
       jResult.data = null;
     }
   }
+
+  /**
+  * #  列出合同照片
+  */
+ async listSfzFileName( userId) {
+  // const { ctx } = this;
+  let jResult: IResult
+    = {
+    code: 600,
+    msg: '',
+    data: null
+  };
+  try {
+    let extDir = `../public/photo/${userId}`;
+    var param = path.resolve(__dirname, extDir);
+    let arrFileName = new Array();
+    return new Promise((resolve, reject) => {
+      fs.stat(param, function (err, stats) {
+        if (err) {
+          reject(err);
+        }
+        if (stats.isDirectory()) {
+          fs.readdir(param, function (err, files) {
+            if (err) {
+              reject(err);
+            }
+            files.forEach(e => {
+              // console.log(e);
+              // let url = path.resolve(path.join(param, e));
+              if (e === "sfz1.jpg" || e !== "sfz2.jpg") {
+                arrFileName.push(e);
+              }
+            });
+            jResult.data = arrFileName;
+            console.log(arrFileName);
+            resolve(jResult);
+          });
+        }
+      });
+    });
+  } catch (error) {
+    jResult.code = 601;
+    jResult.msg = error.stack;
+    console.log(JSON.stringify(error.stack));
+    jResult.data = null;
+  }
+}
 
 }
